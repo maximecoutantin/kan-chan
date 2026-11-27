@@ -113,6 +113,8 @@ button:focus-visible{outline:3px solid var(--sfx);outline-offset:2px}
 .tag{position:absolute;right:4px;top:3px;font-size:10px;font-weight:700;color:var(--tone)}
 .blank{background:radial-gradient(var(--tone) 1px,transparent 1.3px) 0 0/5px 5px;opacity:.35;border:2.5px solid transparent}
 @media (max-width:520px){.sheet{--cw:72px}.sheet.yoon{--cw:104px}.glyph{height:48px}.only-h .glyph,.only-k .glyph{height:60px}.cell{min-height:88px}}
+/* phones: the whole chart fits the screen, hiragana above katakana */
+@media (max-width:440px){.sheet{grid-template-columns:24px repeat(var(--cols),minmax(0,1fr));gap:4px;min-width:0}.sheet .pair{flex-direction:column}.sheet .glyph{height:38px;max-width:100%}.sheet.only-h .glyph,.sheet.only-k .glyph{height:52px}.sheet.yoon .glyph{height:34px}.sheet .cell{min-height:0;padding:3px 2px 5px}.sheet .rom{font-size:14px}.rowhd{font-size:15px}.colhd{font-size:16px}}
 
 footer{font-size:13px;color:var(--muted);max-width:70ch;display:flex;flex-direction:column;gap:6px}
 footer p{margin:0}
@@ -161,7 +163,7 @@ dialog::backdrop{background:rgba(17,17,17,.55)}
 .canvas-wrap{position:relative;aspect-ratio:1;max-width:100%;border:2.5px solid var(--ink);background:var(--paper)}
 .canvas-wrap::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(var(--ghost),var(--ghost)) center/100% 1px no-repeat,linear-gradient(var(--ghost),var(--ghost)) center/1px 100% no-repeat}
-#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+#cv,.canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .pad-btns{display:flex;gap:6px;flex-wrap:wrap}
 .pad-btns .btn{flex:1}
 .result{min-height:64px;font-size:14px;line-height:1.45}
@@ -224,6 +226,7 @@ dialog::backdrop{background:rgba(17,17,17,.55)}
 .pill.bad{border-color:var(--sfx);color:var(--sfx);cursor:pointer;font:700 15px var(--f-ui)}
 .pill.bad.open{cursor:default;flex-direction:column;align-items:flex-start;gap:2px}
 .pill .jp{font-family:var(--f-jp);font-weight:400}
+.fc-card,.wq-fb{box-sizing:border-box}
 .fc-card{position:relative;overflow:hidden;width:min(100%,520px);min-height:230px;border:3px solid var(--ink);background:var(--white);
   display:flex;align-items:center;justify-content:center;gap:6px;padding:20px}
 .fc-card::before{content:"";position:absolute;inset:-60%;background:repeating-conic-gradient(from 0deg at 50% 50%,var(--ink) 0deg .5deg,transparent .5deg 7deg);opacity:.09;pointer-events:none}
@@ -1471,10 +1474,10 @@ function review(x,alts){
     const pick=alts.find(a=>a.ch===b.dataset.k);review(pick,[x,...alts.filter(a=>a!==pick)].slice(0,4));
   });
 }
-function hintText(){return $("#autoCheck").checked
+function hintText(){return ($("#autoCheck").checked
   ?"Draw any hiragana or katakana from this tab. When you stop drawing, it's recognized and placed in its box."
-  :"Draw any hiragana or katakana from this tab, then press CHECK to compare it with the real one before it goes in the grid."}
-  +" To redo one character, click its tile and choose Remove from grid."
+  :"Draw any hiragana or katakana from this tab, then press CHECK to compare it with the real one before it goes in the grid.")
+  +" To redo one character, click its tile and choose Remove from grid."}
 function resultHTML(x){
   const it=items[x.i],already=lastPlaced&&!lastPlaced.isNew;
   return `<b class="big">${x.ch}</b><span class="rom2">${it.r}</span> ${already?"already in its box. Good!":"placed in its box!"}`;
@@ -2534,7 +2537,7 @@ const ROWOF={};[SETS.basic,SETS.voiced].forEach(set=>set.rows.forEach(([lab,h])=
 const sameRow=(a,b)=>!!ROWOF[a]&&ROWOF[a]===ROWOF[b];
 const GRAM_M={"は":"topic marker","が":"subject marker","を":"object marker","に":"to / at / in","で":"at / by / with","と":"and / with","も":"also / too","の":"'s / of","へ":"towards","か":"question marker","ね":"right? / isn't it","よ":"you know! (emphasis)","や":"and (examples)","な":"(links an adjective)","だ":"is (plain)","です":"is / am / are (polite)","でした":"was (polite)","ます":"polite verb ending","ました":"polite past ending","ません":"polite negative ending","ませんでした":"polite negative past","ましょう":"let's …","ください":"please (do …)","から":"from / because","まで":"until / up to","より":"than / from","だけ":"only","しか":"only (with a negative)","て":"linking form","た":"past ending","ない":"not","たい":"want to","ている":"is …-ing","ています":"is …-ing (polite)","でしょう":"probably","じゃない":"is not","ではありません":"is not (polite)","ございます":"(very polite) is / have","お":"polite prefix","ご":"polite prefix","ちゃん":"cute name suffix","さん":"Mr / Ms","くん":"name suffix (boys)","さま":"very polite name suffix"};
 let TRD=null;
-const TR_EXTRA=[["日本語","にほんご","Japanese (language)"],["日本人","にほんじん","Japanese person"],["勉強","べんきょう","study"],["東京","とうきょう","Tokyo"],["大阪","おおさか","Osaka"],["京都","きょうと","Kyoto"],["朝ご飯","あさごはん","breakfast"],["昼ご飯","ひるごはん","lunch"],["晩ご飯","ばんごはん","dinner"],["お願い","おねがい","please, a request"],["練習","れんしゅう","practice"],["結婚","けっこん","marriage"],["終わる","おわる","to end"],["英語","えいご","English (language)"],["中国語","ちゅうごくご","Chinese (language)"],["韓国語","かんこくご","Korean (language)"],["仏語","ふつご","French (language)"],["何時","なんじ","what time"],["何人","なんにん","how many people"],["大好き","だいすき","really like, love"],["お手洗い","おてあらい","toilet"],["駅員","えきいん","station staff"],["お疲れ様","おつかれさま","thanks for your hard work"],["誕生日","たんじょうび","birthday"],["週末","しゅうまつ","weekend"],["今晩","こんばん","tonight"],["今朝","けさ","this morning"],["一人","ひとり","one person, alone"],["二人","ふたり","two people"],["大人","おとな","adult"],["今日","きょう","today"],["明日","あした","tomorrow"],["昨日","きのう","yesterday"],["お土産","おみやげ","souvenir"],["注文","ちゅうもん","order"],["料金","りょうきん","fee, price"],["案内","あんない","guidance, information"],["予約","よやく","reservation"],["連絡","れんらく","contact"],["説明","せつめい","explanation"],["ご飯","ごはん","rice, meal"],["お茶","おちゃ","green tea"],["お金","おかね","money"],["お名前","おなまえ","(your) name"],["お水","おみず","water"],["お元気","おげんき","well, healthy"],["すみません","すみません","excuse me, sorry"],["ございます","ございます","(very polite) to be"],["ください","ください","please (give me)"],["いただきます","いただきます","let's eat (said before a meal)"],["ごちそうさま","ごちそうさま","thanks for the meal"]];
+const TR_EXTRA=[["いい","いい","good"],["ある","ある","to be, to have (things)"],["いる","いる","to be (people, animals)"],["わかる","わかる","to understand"],["おいしい","おいしい","delicious"],["和食","わしょく","Japanese food"],["日本語","にほんご","Japanese (language)"],["日本人","にほんじん","Japanese person"],["勉強","べんきょう","study"],["東京","とうきょう","Tokyo"],["大阪","おおさか","Osaka"],["京都","きょうと","Kyoto"],["朝ご飯","あさごはん","breakfast"],["昼ご飯","ひるごはん","lunch"],["晩ご飯","ばんごはん","dinner"],["お願い","おねがい","please, a request"],["練習","れんしゅう","practice"],["結婚","けっこん","marriage"],["終わる","おわる","to end"],["英語","えいご","English (language)"],["中国語","ちゅうごくご","Chinese (language)"],["韓国語","かんこくご","Korean (language)"],["仏語","ふつご","French (language)"],["何時","なんじ","what time"],["何人","なんにん","how many people"],["大好き","だいすき","really like, love"],["お手洗い","おてあらい","toilet"],["駅員","えきいん","station staff"],["お疲れ様","おつかれさま","thanks for your hard work"],["誕生日","たんじょうび","birthday"],["週末","しゅうまつ","weekend"],["今晩","こんばん","tonight"],["今朝","けさ","this morning"],["一人","ひとり","one person, alone"],["二人","ふたり","two people"],["大人","おとな","adult"],["今日","きょう","today"],["明日","あした","tomorrow"],["昨日","きのう","yesterday"],["お土産","おみやげ","souvenir"],["注文","ちゅうもん","order"],["料金","りょうきん","fee, price"],["案内","あんない","guidance, information"],["予約","よやく","reservation"],["連絡","れんらく","contact"],["説明","せつめい","explanation"],["ご飯","ごはん","rice, meal"],["お茶","おちゃ","green tea"],["お金","おかね","money"],["お名前","おなまえ","(your) name"],["お水","おみず","water"],["お元気","おげんき","well, healthy"],["すみません","すみません","excuse me, sorry"],["ございます","ございます","(very polite) to be"],["ください","ください","please (give me)"],["いただきます","いただきます","let's eat (said before a meal)"],["ごちそうさま","ごちそうさま","thanks for the meal"]];
 function trData(){
   if(TRD)return TRD;
   KJ_LV.forEach(kjLoad);
@@ -2545,6 +2548,8 @@ function trData(){
 }
 function kanjiReading(k,after){
   const x=KJI[k];if(!x)return null;
+  // 来る is irregular: 来ます き, 来ない こ, 来る く
+  if(k==="来"&&after&&isHi(after[0])){const r={"ま":"き","た":"き","て":"き","な":"こ","よ":"こ","ら":"こ","さ":"こ","る":"く","れ":"く"}[after[0]];if(r)return r}
   const kun=x.kun.map(r=>r.replace(/^-|-$/g,""));
   for(const r of kun){const [st,oku]=r.split(".");if(st&&oku&&after&&(after.startsWith(oku)||(oku.length>1&&after.startsWith(oku.slice(0,-1)))||(oku.length===1&&sameRow(oku,after[0]))))return st}
   if(after&&isHi(after[0])&&kun.length)return kun[0].split(".")[0];
@@ -2590,25 +2595,46 @@ function analyzeJP(text){
       let L=Math.min(8,s.length-i),hit=null;
       for(;L>=1;L--){const w=s.slice(i,i+L).join("");if(has(w)&&!(/[でに]$/.test(w)&&L>1&&s[i+L]==="す")){hit=w;break}}
       let j=i;while(j<s.length&&isKj(s[j]))j++;
-      const run=s.slice(i,j).join(""),after=s.slice(j).join("");
+      const run=s.slice(i,j).join(""),after=s.slice(j).join(""),runLen=j-i;
+      // a one-kanji verb or adjective must match the kanji's own okurigana (行く is い.く, not 行い "conduct")
+      const okus=runLen===1&&KJI[run]?KJI[run].kun.map(r=>r.replace(/^-|-$/g,"")).filter(r=>r.includes(".")).map(r=>r.split(".")[1]):[];
+      const hasV=w=>has(w)&&(!okus.length||okus.includes(w.slice(run.length)));
       // conjugated verbs and adjectives: 食べます → 食べる, 行きます → 行く, 高かった → 高い
       let conj=null;
       if(after&&isHi(after[0])){
-        for(let k=Math.min(2,after.length);k>=1&&!conj;k--){const pre=after.slice(0,k);if(has(run+pre+"る")&&(!hit||Array.from(hit).length<=Array.from(run).length))conj={s:run+pre,r:VBY[run+pre+"る"][1][0][0].slice(0,-1),v:VBY[run+pre+"る"]}}
-        if(!conj&&"っんい".includes(after[0]))for(const e of (after[0]==="っ"?["る","う","つ","く"]:after[0]==="ん"?["む","ぶ","ぬ"]:["く","ぐ"])){if(has(run+e)&&!(hit&&Array.from(hit).length>Array.from(run).length)){conj={s:run,r:VBY[run+e][1][0][0].slice(0,-1),v:VBY[run+e]};break}}
-        if(!conj)for(const e of ENDS){if(sameRow(e,after[0])&&has(run+e)&&!(hit&&Array.from(hit).length>Array.from(run).length)){conj={s:run,r:VBY[run+e][1][0][0].slice(0,-1),v:VBY[run+e]};break}}
-        if(!conj&&"かくけ".includes(after[0])&&has(run+"い")&&!(hit&&Array.from(hit).length>Array.from(run).length))conj={s:run,r:VBY[run+"い"][1][0][0].slice(0,-1),v:VBY[run+"い"]};
+        for(let k=Math.min(2,after.length);k>=1&&!conj;k--){const pre=after.slice(0,k);if(hasV(run+pre+"る")&&(!hit||Array.from(hit).length<=Array.from(run).length))conj={s:run+pre,r:VBY[run+pre+"る"][1][0][0].slice(0,-1),v:VBY[run+pre+"る"]}}
+        if(!conj&&"っんい".includes(after[0]))for(const e of (after[0]==="っ"?["る","う","つ","く"]:after[0]==="ん"?["む","ぶ","ぬ"]:["く","ぐ"])){if(hasV(run+e)&&!(hit&&Array.from(hit).length>Array.from(run).length)){conj={s:run,r:VBY[run+e][1][0][0].slice(0,-1),v:VBY[run+e]};break}}
+        if(!conj)for(const e of ENDS){if(sameRow(e,after[0])&&hasV(run+e)&&!(hit&&Array.from(hit).length>Array.from(run).length)){conj={s:run,r:VBY[run+e][1][0][0].slice(0,-1),v:VBY[run+e]};break}}
+        if(!conj&&"かくけ".includes(after[0])&&hasV(run+"い")&&!(hit&&Array.from(hit).length>Array.from(run).length))conj={s:run,r:VBY[run+"い"][1][0][0].slice(0,-1),v:VBY[run+"い"]};
       }
+      // a lone kanji whose okurigana follows (行く, 行かない) is a verb, not the noun with the same kanji (行 "line")
+      const okuHit=o=>!!after&&(after.startsWith(o)||(o.length>1&&after.startsWith(o.slice(0,-1)))||(o.length===1&&(sameRow(o,after[0])||("っん".includes(after[0])&&ENDS.includes(o)))));
+      if(hit&&!conj&&runLen===1&&Array.from(hit).length===1&&(okus.some(okuHit)||(run==="来"&&/^[またてなよらさるれ]/.test(after))))hit=null;
+      // a compound missing from the word lists (和食) is read as a whole, instead of a known word plus a lone kanji
+      if(hit&&!conj&&Array.from(hit).length<runLen){const cov=str=>{let a=Array.from(str);while(a.length){let L=a.length;for(;L>=1;L--)if(has(a.slice(0,L).join("")))break;if(!L)return false;a=a.slice(L)}return true};if(!cov(run.slice(hit.length)))hit=null}
       if(conj&&(!hit||Array.from(conj.s).length>=Array.from(hit).length)){toks.push({s:conj.s,r:conj.r,m:conj.v[1][0][2],t:"stem",dict:conj.v[0]});i+=Array.from(conj.s).length;continue}
       if(hit){const v=VBY[hit];toks.push({s:hit,r:v[1][0][0],m:v[1][0][2],t:"word"});i+=Array.from(hit).length;continue}
       const parts=[];for(let k=i;k<j;k++){const x=KJI[s[k]];parts.push(j-i>1&&x&&x.on.length?H2Kc(x.on[0]):(kanjiReading(s[k],k===j-1?after:"")||"?"))}
-      toks.push({s:run,r:parts.join(""),m:run.length===1&&KJI[run]?KJI[run].m[0]:"",t:after&&isHi(after[0])?"stem":"kanji",guess:true});i=j;continue;
+      toks.push({s:run,r:parts.join(""),m:run.length===1&&KJI[run]?KJI[run].m[0]:"",t:runLen===1&&after&&isHi(after[0])?"stem":"kanji",guess:true});
+      {const o=runLen===1&&okus.find(okuHit);if(o&&o.length===1)toks[toks.length-1].dict=run+o}
+      i=j;continue;
     }
     if(isKa(c)){let j=i;while(j<s.length&&isKa(s[j]))j++;const w=s.slice(i,j).join("");const v=VBY[w];toks.push({s:w,r:w,m:v?v[1][0][2]:"",t:"kata"});i=j;continue}
     if(isHi(c)&&"おご".includes(c)&&s[i+1]&&isKj(s[i+1])){let w=null;for(let L=Math.min(6,s.length-i);L>=2;L--){const x=s.slice(i,i+L).join("");if(has(x)&&!(/[でに]$/.test(x)&&s[i+L]==="す")){w=x;break}}
       if(w){const v=VBY[w];toks.push({s:w,r:v[1][0][0],m:v[1][0][2],t:"word"});i+=Array.from(w).length;continue}}
     if(isHi(c)){
       let hit=c;for(let L=Math.min(10,s.length-i);L>=2;L--){const w=s.slice(i,i+L).join("");if(KD.has(w)&&Array.from(w).every(isHi)){hit=w;break}}
+      // verbs written in kana: あり+ません (ある), い+ます (いる), わから+ない (わかる)
+      // a particle after a word stays a particle: これ|は|いい, not これ|はい|い
+      {const pv=toks[toks.length-1];if("はがをも".includes(c)&&pv&&pv.t!=="gram"&&pv.t!=="other"&&hit.startsWith(c)&&hit.length>1){let r2=0;for(let L=Math.min(10,s.length-i-1);L>=2;L--){const w=s.slice(i+1,i+1+L).join("");if(KD.has(w)&&Array.from(w).every(isHi)){r2=L;break}}if(r2>=2)hit=c}}
+      if(!(i>0&&isKj(s[i-1])))
+      {let best=null;const SAFE=["ませんでした","ました","ません","ましょう","ます","なかった","ない","たい","ている","ています","てください"];
+       for(let n=1;n<=4&&i+n<s.length;n++){const stem=s.slice(i,i+n).join("");if(!Array.from(stem).every(isHi))break;
+         const tryV=(w,body)=>{if(!KD.has(w)||!VBY[w])return;const rest=s.slice(i+Array.from(body).length).join("");const m=SAFE.find(x=>rest.startsWith(x));
+           if(m&&Array.from(body).length+Array.from(m).length>Array.from(hit).length&&(!best||body.length>best.s.length))best={s:body,w}};
+         tryV(stem+"る",stem);
+         const ch=s[i+n];if(ch&&isHi(ch))for(const e of ENDS)if(sameRow(e,ch))tryV(stem+e,stem+ch)}
+       if(best){const v=VBY[best.w];toks.push({s:best.s,r:best.s,m:v[1][0][2],t:"stem",dict:best.w});i+=Array.from(best.s).length;continue}}
       const v=VBY[hit];toks.push({s:hit,r:hit,m:GRAM_M[hit]||(v?v[1][0][2]:""),t:GRAM_M[hit]?"gram":"hira"});i+=Array.from(hit).length;continue;
     }
     toks.push({s:c,r:c,m:"",t:"other"});i++;
@@ -2924,11 +2950,32 @@ $("#acExport").onclick=()=>{
   acMsg("Downloaded! Look for the file kan-chan-progress-"+dayKey()+".json in your downloads.",true);
 };
 $("#acImport").onclick=()=>{$("#acFile").value="";$("#acFile").click()};
+/* Only accept values with the shape kan-chan itself saves: a damaged or tampered file can't inject anything into the page. */
+function cleanValue(k,v){
+  if(typeof v!=="string"||v.length>2e6)return null;
+  const num=x=>typeof x==="number"&&isFinite(x)&&x>=0&&x<1e9;
+  const J=()=>{try{return JSON.parse(v)}catch(e){return undefined}};
+  const obj=o=>o&&typeof o==="object"&&!Array.isArray(o);
+  if(k==="kana-stats"||k==="kj-stats"){const o=J();if(!obj(o))return null;const r={};
+    Object.entries(o).forEach(([c,s])=>{if([...c].length<=3&&obj(s)&&num(s.c)&&num(s.w)&&num(s.s)){r[c]={c:s.c,w:s.w,s:s.s};if(typeof s.t==="number"&&isFinite(s.t)&&s.t>0)r[c].t=s.t}});return JSON.stringify(r)}
+  if(k==="kana-hist"||k==="kj-hist"){const o=J();if(!obj(o))return null;const r={};
+    Object.entries(o).forEach(([d,h])=>{if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&obj(h)&&num(h.c)&&num(h.w))r[d]={c:h.c,w:h.w}});return JSON.stringify(r)}
+  if(k==="kana-found"){const a=J();return Array.isArray(a)?JSON.stringify(a.filter(c=>typeof c==="string"&&ROM[c])):null}
+  if(k==="kj-unlocked"||k==="kj-fclv"){const a=J();return Array.isArray(a)?JSON.stringify(a.filter(n=>KJ_LV.includes(n))):null}
+  if(k==="fc-groups"){const a=J();return Array.isArray(a)?JSON.stringify(a.filter(g=>typeof g==="string"&&/^[hk][bvyl]\d{1,2}$/.test(g))):null}
+  if(k==="kana-sheet"){const o=J();if(!obj(o))return null;const r={},pt=p=>Array.isArray(p)&&p.length===2&&p.every(x=>typeof x==="number"&&isFinite(x));
+    Object.entries(o).forEach(([key,boxes])=>{if(!/^[hkj]:.{1,3}$/.test(key)||!obj(boxes))return;const b2={};
+      Object.entries(boxes).forEach(([b,strokes])=>{if(/^\d{1,2}$/.test(b)&&Array.isArray(strokes))b2[b]=strokes.filter(s=>Array.isArray(s)&&s.every(pt))});r[key]=b2});return JSON.stringify(r)}
+  // settings: short plain text; each one is checked again where the page uses it
+  return v.length<=400?v:null;
+}
 $("#acFile").onchange=async()=>{
   const f=$("#acFile").files[0];if(!f)return;
+  if(f.size>5e6){acMsg("This file is too big to be a kan-chan progress file.");return}
   let file;try{file=JSON.parse(await f.text())}catch(e){acMsg("This file can't be read. Choose a file made with “Download my progress”.");return}
-  const data=file&&file.app==="kan-chan"&&file.data&&typeof file.data==="object"?file.data:null;
-  const keys=data?Object.keys(data).filter(k=>KEEP_RE.test(k)&&typeof data[k]==="string"):[];
+  const raw=file&&file.app==="kan-chan"&&file.data&&typeof file.data==="object"?file.data:null,data={};
+  if(raw)Object.keys(raw).forEach(k=>{if(KEEP_RE.test(k)){const v=cleanValue(k,raw[k]);if(v!==null)data[k]=v}});
+  const keys=Object.keys(data);
   if(!keys.length){acMsg("This isn't a kan-chan progress file. Choose a file made with “Download my progress”.");return}
   const when=file.saved&&!isNaN(new Date(file.saved))?new Date(file.saved).toLocaleString():"an unknown date";
   const ok=await confirmBox({title:"Load this progress?",ok:"YES, LOAD IT",
